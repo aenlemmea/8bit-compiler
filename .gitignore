@@ -1,0 +1,16 @@
+*.kdev4
+swap/
+.kdev4/
+kdev4/
+
+*.swp
+*.cache
+.cache/
+
+idea/
+code/
+vscode/
+
+build/
+
+.env 
