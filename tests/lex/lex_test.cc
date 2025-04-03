@@ -12,6 +12,7 @@ auto main(void) -> int32_t
         a = 10;
         b = 20;
         c = a + b;
+        int a;
         if (c == 30) {
             c = c + 1;
         }

@@ -3,9 +3,10 @@
 
 #include <vector>
 #include <memory>
+#include <exception>
 #include "../token/token.hh"
 
-#define str(x) #x
+#define stringify(x) #x
 
 namespace etbit::ast
 {
@@ -26,11 +27,15 @@ struct node {};
 struct expr : node {
     virtual ~expr() = default;
     virtual void print(std::ostream& os) const = 0;
+    virtual void generate(std::ostream&) const {}
+    virtual void _gen_left(std::ostream&) const {}
+    virtual void _gen_right(std::ostream&) const {}
 };
 
 struct stmnt : node {
     virtual ~stmnt() = default;
     virtual void print(std::ostream& os) const = 0;
+    virtual void generate(std::ostream&) const {}
 };
 
 struct context : node {
@@ -51,6 +56,15 @@ struct context : node {
             }
             else {
                 os << "context: nullptr in statement";
+            }
+            os << "\n";
+        }
+    }
+
+    void generate(std::ostream& os) const {
+        for (const auto& e: statements) {
+            if (e != nullptr) {
+                e->generate(os);
             }
         }
     }
@@ -74,7 +88,11 @@ struct type : public expr {
 
     void print(std::ostream& os) const override
     {
-        os << str(expr_kind::TYPE) << " " << token;
+        os << stringify(expr_kind::TYPE) << " " << token;
+    }
+
+    void generate(std::ostream &) const override {
+        // No OP <>
     }
 };
 
@@ -82,12 +100,26 @@ struct identifier : public expr {
     expr_kind kind = expr_kind::IDENTIFIER;
     token::token token;
 
+    friend struct infix_expr;
+
     identifier(token::token&& _tok) : token(_tok) {}
     identifier() : identifier{token::token{token::tokens::ILLEGAL, "-1"}} {}
 
     void print(std::ostream& os) const override
     {
-        os << str(expr_kind::IDENTIFIER) << " " << token;
+        os << stringify(expr_kind::IDENTIFIER) << " " << token;
+    }
+
+    void generate(std::ostream & os) const override {
+        // TODO
+    }
+
+    void _gen_left(std::ostream& os) const override {
+        os << "lda " << /*TODO*/ "\n";
+    }
+
+    void _gen_right(std::ostream& os) const override {
+        os << "mov B M " << /*TODO*/ "\n";
     }
 };
 
@@ -101,7 +133,19 @@ struct numeral : public expr {
 
     void print(std::ostream & os) const override
     {
-        os << str(expr_kind::NUM) << " " << token;
+        os << stringify(expr_kind::NUM) << " " << token;
+    }
+
+    void generate(std::ostream & os) const override {
+        // TODO
+    }
+
+    void _gen_left(std::ostream& os) const override {
+        os << "ldi A" << /*TODO*/ "\n";
+    }
+
+    void _gen_right(std::ostream& os) const override {
+        os << "ldi B" << /*TODO*/ "\n";
     }
 };
 
@@ -116,7 +160,7 @@ struct infix_expr : public expr {
 
     void print(std::ostream& os) const override
     {
-        os << str(expr_kind::INFIX) << " \n";
+        os << stringify(expr_kind::INFIX) << " \n";
         os << "Left: ";
         if (left != nullptr) {
             left->print(os);
@@ -132,6 +176,23 @@ struct infix_expr : public expr {
             os << "infix_expr: nullptr in right";
         }
     }
+
+    void generate(std::ostream & os) const override {
+        left->_gen_left(os);
+        right->_gen_right(os);
+
+        if (oper == "+") {
+            os << "add\n";
+        } else if (oper == "=") {
+
+        } else if (oper == "-") {
+            os << "sub\n";
+        } else if (oper == "==") {
+            os << "cmp\n";
+        } else {
+            throw std::runtime_error( "unsupported operation: " + oper );
+        }
+    }
 };
 
 struct condition_expr : public expr {
@@ -143,12 +204,16 @@ struct condition_expr : public expr {
 
     void print(std::ostream & os) const override
     {
-        os << str(expr_kind::CONDN) << " \n";
+        os << stringify(expr_kind::CONDN) << " \n";
         if (condition != nullptr) {
             condition->print(os);
         } else {
             os << "condition_expr: nullptr";
         }
+    }
+
+    void generate(std::ostream & os) const override {
+        condition->generate(os);
     }
 };
 
@@ -161,7 +226,7 @@ enum class stmnt_kind {
     VARDEC_STMNT,
 };
 
-// General expr statement to hold rvalues.
+// Wrapper around expr (more generally hosts rvalues).
 struct expr_stmnt : public stmnt {
     stmnt_kind kind = stmnt_kind::EXPR_STMNT;
     expr_ctl expression;
@@ -171,12 +236,17 @@ struct expr_stmnt : public stmnt {
 
     void print(std::ostream & os) const override
     {
-        os << str(stmnt_kind::EXPR_STMNT) << " \n";
+        os << "\n";
+        os << stringify(stmnt_kind::EXPR_STMNT) << " \n";
         if (expression != nullptr) {
             expression->print(os);
         } else {
             os << "expr_stmnt: nullptr";
         }
+    }
+
+    void generate(std::ostream & os) const override {
+        expression->generate(os);
     }
 };
 
@@ -191,15 +261,18 @@ struct vardecl_stmnt : public stmnt {
 
     void print(std::ostream & os) const override
     {
-        os << str(stmnt_kind::VARDEC_STMNT) << " \n";
-        os << "TYPE: ";
+        os << stringify(stmnt_kind::VARDEC_STMNT) << " \n";
+        os << "TYPE: \n";
         decl_type.print(os);
-        os << "IDENT: ";
+        os << "\nIDENT: \n";
         ident.print(os);
+    }
+
+    void generate(std::ostream & os) const override {
+        ident.generate(os);
     }
 };
 
-// For statements like a = 2 + 3;
 struct [[deprecated("Use infix_expr combined with expr_stmnt"), maybe_unused]] assign_stmnt : public stmnt {
     stmnt_kind kind = stmnt_kind::ASSIGN_STMNT;
     identifier ident;
@@ -210,7 +283,7 @@ struct [[deprecated("Use infix_expr combined with expr_stmnt"), maybe_unused]] a
 
     void print(std::ostream & os) const override
     {
-        os << str(stmnt_kind::ASSIGN_STMNT) << " \n";
+        os << stringify(stmnt_kind::ASSIGN_STMNT) << " \n";
         os << "IDENT: ";
         ident.print(os);
         if (expression != nullptr) {
@@ -241,6 +314,14 @@ struct if_stmnt : public stmnt {
         }
         os << " BODY: ";
         body.print(os);
+    }
+
+    void generate(std::ostream & os) const override {
+        cond->generate(os);
+        os << "jne %donelabel\n";
+        body.generate(os);
+        os << "jmp %donelabel\n";
+        os << "donelabel: \n";
     }
 };
 

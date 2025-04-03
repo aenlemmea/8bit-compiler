@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <assert.h>
 
 #include "front/parse/parser.hh"
 
@@ -14,13 +15,43 @@ auto main(void) -> int32_t
         c = a + b;
     )";
 
-    etbit::lexer::lexer lex{ input };
+    std::string input_decl = R"(
+        int a;
+    )";
+
+    std::string input_if = R"(
+        int a;
+        int e;
+        if (a == 3) {
+            e = e + 4;
+        }
+    )";
+
+    std::string input_full = R"(
+        int a;
+        int b;
+        int c;
+
+        a = 3 + 2;
+        b = a + 3;
+
+        if (b == 8) {
+            a = 2;
+            c = 3;
+        }
+    )";
+
+    etbit::lexer::lexer lex{ input_if };
     etbit::parser::parser prs{ lex };
 
     auto program = prs.parse_context();
 
-    for (auto& e : program.statements) {
-        e->print(std::cout);
-        std::cout << "\n\n";
+    if (prs.get_error_count() > 0) {
+        for (const auto& e : prs.errors) {
+            std::cout << e << "\n";
+        }
+        std::exit(EXIT_FAILURE);
     }
+
+    program.print(std::cout);
 }

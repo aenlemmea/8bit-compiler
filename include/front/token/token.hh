@@ -80,6 +80,10 @@ struct token {
         os << "Kind: " << tokmap[t.kind] << " Value: " << t.value;
         return os;
     }
+
+    std::string to_string() const {
+        return "Kind: " + tokmap[kind] + " Value: " + value + "\n";
+    }
 };
 
 // Helper function for the lexer to see if a string given is a recognized keyword or not.
