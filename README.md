@@ -13,6 +13,20 @@ The sample folder shows a sample ran with the compiler.
 
 It does some minor semantic checking and the codegen works directly on the AST.
 
+```
+.
+├── CMakeLists.txt
+├── include    // Code for all the interfaces as well as the ast implementation
+├── lib        // External Library - Used uT for testing
+├── README.md
+├── sample     // Language sample
+├── src        // Implementation files for the interfaces.
+└── tests      // Unit and functionality (integration) testing.
+
+```
+
+
+
 ## Usage:
 
 ```bash
