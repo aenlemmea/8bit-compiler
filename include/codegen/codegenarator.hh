@@ -13,13 +13,13 @@ namespace etbit::codegen
     struct generator {
         generator(parser::parser& _prs, std::ostream& _os) : prs(_prs) {
             program = _prs.parse_context();
-            if (_prs.get_error_count() > 0) {
-                for (const auto& e : prs.errors) {
-                    _os << e << "\n";
-                }
-                _os << "Found errors. Exiting\n";
-                std::exit(EXIT_SUCCESS);
-            }
+             if (_prs.get_error_count() > 0) {
+                 for (const auto& e : prs.errors) {
+                     _os << e << "\n";
+                 }
+                 _os << "Found errors. Exiting\n";
+                 std::exit(EXIT_SUCCESS);
+             }
         }
 
         void generate_to_file(const std::string& filename_with_extension) {

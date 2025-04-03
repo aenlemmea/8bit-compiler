@@ -33,6 +33,8 @@ It does some minor semantic checking and the codegen works directly on the AST.
 Usage: ./etbit <filename> --show-parsed
 ```
 
+You can then use the generated `.asm` file with the assembler provided in the original 8bit-computer project to further run it on the VM.
+
 ## Building:
 
 ```bash
