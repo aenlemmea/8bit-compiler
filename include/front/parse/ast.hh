@@ -100,8 +100,6 @@ struct identifier : public expr {
     expr_kind kind = expr_kind::IDENTIFIER;
     token::token token;
 
-    friend struct infix_expr;
-
     identifier(token::token&& _tok) : token(_tok) {}
     identifier() : identifier{token::token{token::tokens::ILLEGAL, "-1"}} {}
 
@@ -115,11 +113,11 @@ struct identifier : public expr {
     }
 
     void _gen_left(std::ostream& os) const override {
-        os << "lda " << /*TODO*/ "\n";
+        os << "lda " << token.value + "\n";
     }
 
     void _gen_right(std::ostream& os) const override {
-        os << "mov B M " << /*TODO*/ "\n";
+        os << "mov B M " << token.value + "\n";
     }
 };
 
@@ -141,11 +139,11 @@ struct numeral : public expr {
     }
 
     void _gen_left(std::ostream& os) const override {
-        os << "ldi A" << /*TODO*/ "\n";
+        os << "ldi A " << /*TODO*/ "\n";
     }
 
     void _gen_right(std::ostream& os) const override {
-        os << "ldi B" << /*TODO*/ "\n";
+        os << "ldi B " << /*TODO*/ "\n";
     }
 };
 
@@ -177,6 +175,16 @@ struct infix_expr : public expr {
         }
     }
 
+    // For circular cases.
+    void _gen_left(std::ostream & os) const override {
+        generate(os);
+    }
+
+    // For circular cases.
+    void _gen_right(std::ostream & os) const override {
+        generate(os);
+    }
+
     void generate(std::ostream & os) const override {
         left->_gen_left(os);
         right->_gen_right(os);
@@ -184,7 +192,7 @@ struct infix_expr : public expr {
         if (oper == "+") {
             os << "add\n";
         } else if (oper == "=") {
-
+            os << "sta " << dynamic_cast<identifier*>(left.get())->token.value << "\n";
         } else if (oper == "-") {
             os << "sub\n";
         } else if (oper == "==") {

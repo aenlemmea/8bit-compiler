@@ -12,6 +12,7 @@ auto main(int32_t argc, char** argv) -> int
 
     if (argc < 2) {
         std::cout << "Usage: " << argv[0] << " <filename> " << "--show-parsed\n";
+        std::cout << "\t\t --show-parsed: Show the AST and also produce the assembler instructions\n";
         exit(EXIT_FAILURE);
     }
     std::ifstream inp(argv[1]);
