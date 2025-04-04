@@ -110,6 +110,7 @@ struct identifier : public expr {
 
     void generate(std::ostream & os) const override {
         // TODO
+        os << "Loading A\n";
     }
 
     void _gen_left(std::ostream& os) const override {
@@ -136,6 +137,7 @@ struct numeral : public expr {
 
     void generate(std::ostream & os) const override {
         // TODO
+        os << "Loading 42\n";
     }
 
     void _gen_left(std::ostream& os) const override {
@@ -274,10 +276,17 @@ struct vardecl_stmnt : public stmnt {
         decl_type.print(os);
         os << "\nIDENT: \n";
         ident.print(os);
+        os << "\n";
+    }
+
+    // Meta wrapper to signal that vardecl_stmnt does not generate but reserves generation.
+    void _meta() const noexcept {
+        1 == sizeof(char);
     }
 
     void generate(std::ostream & os) const override {
-        ident.generate(os);
+            _meta();
+            // TODO make meta register vars, reserve idents if needed.
     }
 };
 
@@ -294,11 +303,18 @@ struct [[deprecated("Use infix_expr combined with expr_stmnt"), maybe_unused]] a
         os << stringify(stmnt_kind::ASSIGN_STMNT) << " \n";
         os << "IDENT: ";
         ident.print(os);
+        os << "\n";
         if (expression != nullptr) {
             expression->print(os);
         } else {
             os << "assign_stmnt: nullptr";
         }
+    }
+
+    void generate(std::ostream & os) const override {
+        // BUG Fix below.
+        expression->generate(os);
+        ident.generate(os);
     }
 };
 

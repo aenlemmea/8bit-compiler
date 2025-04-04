@@ -62,7 +62,7 @@ private:
     ast::expr_ctl parse_factor();
 
     // Methods for actually returning statements.
-    std::unique_ptr<ast::expr_stmnt> parse_expr_stmnt();
+    volatile std::unique_ptr<ast::stmnt> parse_expr_stmnt();
     std::unique_ptr<ast::vardecl_stmnt> parse_decl_statement();
     std::unique_ptr<ast::if_stmnt> parse_if_statement();
 

@@ -5,7 +5,7 @@
 void etbit::lexer::lexer::read_char()
 {
     assert(!input.empty());
-    at = ((readpos >= input.length()) ? '0' : input[readpos]);
+    at = ((readpos >= static_cast<int32_t>(input.length())) ? '0' : input[readpos]);
     pos = readpos;
     readpos += 1;
 }
