@@ -1,7 +1,8 @@
 #include "codegen/codegenarator.hh"
 #include <iostream>
 
-std::string /* Copy Elision, No worries */ read_input(std::ifstream& inp) {
+std::string /* Copy Elision, No worries */ read_input(std::ifstream& inp)
+{
     std::string owner { std::istreambuf_iterator<char>(inp),  std::istreambuf_iterator<char>() };
     return owner;
 }

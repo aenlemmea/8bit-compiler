@@ -31,15 +31,15 @@ struct node {};
 struct expr : node {
     virtual ~expr() = default;
     virtual void print(std::ostream& os) const = 0;
-    virtual void generate(std::ostream&) const {}
-    virtual void _gen_left(std::ostream&) const {}
-    virtual void _gen_right(std::ostream&) const {}
+    virtual void generate(std::ostream &) const {}
+    virtual void _gen_left(std::ostream &) const {}
+    virtual void _gen_right(std::ostream &) const {}
 };
 
 struct stmnt : node {
     virtual ~stmnt() = default;
     virtual void print(std::ostream& os) const = 0;
-    virtual void generate(std::ostream&) const {}
+    virtual void generate(std::ostream &) const {}
 };
 
 struct context : node {
@@ -66,7 +66,8 @@ struct context : node {
     }
 
     void generate(std::ostream& os) const {
-        for (const auto& e: statements) {
+        for (const auto& e: statements)
+        {
             if (e != nullptr) {
                 e->generate(os);
             }
@@ -95,19 +96,21 @@ struct type : public expr { // CodgeGen: Done
         os << stringify(expr_kind::TYPE) << " " << token;
     }
 
-    void generate(std::ostream &) const override {
+    void generate(std::ostream &) const override
+    {
         // No OP <>
     }
 };
 
-struct identifier : public expr { // CodeGen: TODO
+struct identifier : public expr { // CodeGen: Done
     expr_kind kind = expr_kind::IDENTIFIER;
     token::token token;
 
     identifier(token::token&& _tok) : token(_tok) {}
     identifier() : identifier{token::token{token::tokens::ILLEGAL, "-1"}} {}
 
-    int32_t _get_mem_addr() const {
+    int32_t _get_mem_addr() const
+    {
         // Precondition: Identifier is declared.
         return memory[token.value];
     }
@@ -118,15 +121,18 @@ struct identifier : public expr { // CodeGen: TODO
     }
 
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         os << "sta " << _get_mem_addr() << "\n";
     }
 
-    void _gen_left(std::ostream& os) const override {
+    void _gen_left(std::ostream& os) const override
+    {
         os << "lda " << _get_mem_addr() << "\n";
     }
 
-    void _gen_right(std::ostream& os) const override {
+    void _gen_right(std::ostream& os) const override
+    {
         os << "mov B M " << _get_mem_addr() << "\n";
     }
 };
@@ -144,15 +150,18 @@ struct numeral : public expr { // CodeGen: Done
         os << stringify(expr_kind::NUM) << " " << token;
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         _gen_left(os);
     }
 
-    void _gen_left(std::ostream& os) const override {
+    void _gen_left(std::ostream& os) const override
+    {
         os << "ldi A " << value << "\n";
     }
 
-    void _gen_right(std::ostream& os) const override {
+    void _gen_right(std::ostream& os) const override
+    {
         os << "ldi B " << value << "\n";
     }
 };
@@ -186,16 +195,19 @@ struct infix_expr : public expr { // CodeGen: Done
     }
 
     // For circular cases.
-    void _gen_left(std::ostream & os) const override {
+    void _gen_left(std::ostream & os) const override
+    {
         generate(os);
     }
 
     // For circular cases.
-    void _gen_right(std::ostream & os) const override {
+    void _gen_right(std::ostream & os) const override
+    {
         generate(os);
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         left->_gen_left(os);
         right->_gen_right(os);
 
@@ -208,7 +220,7 @@ struct infix_expr : public expr { // CodeGen: Done
         } else if (oper == "==") {
             os << "cmp\n";
         } else {
-            throw std::runtime_error( "unsupported operation: " + oper );
+            throw std::runtime_error("unsupported operation: " + oper);
         }
     }
 };
@@ -230,7 +242,8 @@ struct condition_expr : public expr { // CodeGen: Done
         }
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         condition->generate(os);
     }
 };
@@ -263,7 +276,8 @@ struct expr_stmnt : public stmnt { // CodgeGen: Done
         }
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         expression->generate(os);
     }
 };
@@ -287,17 +301,19 @@ struct vardecl_stmnt : public stmnt { // CodeGen: Done
         os << "\n";
     }
 
-    void _meta() const noexcept {
+    void _meta() const noexcept
+    {
         memory.insert({ident.token.value, ++addr});
     }
 
-    void generate(std::ostream&) const override {
-            _meta();
+    void generate(std::ostream &) const override
+    {
+        _meta();
     }
 };
 
 // For a = 2 + b; type statements
-struct assign_stmnt : public stmnt { // CodeGen: TODO
+struct assign_stmnt : public stmnt { // CodeGen: Done
     stmnt_kind kind = stmnt_kind::ASSIGN_STMNT;
     identifier ident;
     expr_ctl expression;
@@ -318,7 +334,8 @@ struct assign_stmnt : public stmnt { // CodeGen: TODO
         }
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         expression->generate(os);
         ident.generate(os);
     }
@@ -346,7 +363,8 @@ struct if_stmnt : public stmnt { // CodeGen: Done
         body.print(os);
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream & os) const override
+    {
         cond->generate(os);
         os << "jne %donelabel\n";
         body.generate(os);

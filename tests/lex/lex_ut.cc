@@ -3,13 +3,14 @@
 
 #include "front/lex/lexer.hh"
 
-int main(void) {
+int main(void)
+{
 
     using namespace boost::ut;
-    std::vector<std::tuple<std::string, std::string, int>> inputexp;
+    std::vector<std::tuple<std::string, std::string, int >> inputexp;
     inputexp.reserve(3);
     inputexp.push_back({"int a;", "Kind: TYPE_INT_DECL Value: int\nKind: IDENT Value: a\nKind: SEMICOLON Value: ;\n", 3});
-    inputexp.push_back({"a = 2 + b;", "Kind: IDENT Value: a\nKind: ASSIGNMENT Value: =\nKind: NUMERAL Value: 2\nKind: PLUS Value: +\nKind: IDENT Value: b\nKind: SEMICOLON Value: ;\n",6});
+    inputexp.push_back({"a = 2 + b;", "Kind: IDENT Value: a\nKind: ASSIGNMENT Value: =\nKind: NUMERAL Value: 2\nKind: PLUS Value: +\nKind: IDENT Value: b\nKind: SEMICOLON Value: ;\n", 6});
     inputexp.push_back({"if(a == 3) { e = 5; }", "Kind: IF Value: if\nKind: LPAREN Value: (\nKind: IDENT Value: a\nKind: EQUALS Value: ==\nKind: NUMERAL Value: 3\nKind: RPAREN Value: )\nKind: LCURLY Value: {\nKind: IDENT Value: e\nKind: ASSIGNMENT Value: =\nKind: NUMERAL Value: 5\nKind: SEMICOLON Value: ;\nKind: RCURLY Value: }\n", 12});
 
     std::vector<std::string> got(3, "");

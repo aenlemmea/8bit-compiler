@@ -1,9 +1,9 @@
-[submodule "lib/ut"]
-	path = lib/ut
-	url = https://github.com/boost-ext/ut
 [submodule "lib/--force"]
 	path = lib/--force
 	url = https://github.com/lightcode/8bit-computer
 [submodule "lib/8bit-computer"]
 	path = lib/8bit-computer
 	url = https://github.com/lightcode/8bit-computer
+[submodule "lib/ut"]
+	path = lib/ut
+	url = https://github.com/boost-ext/ut

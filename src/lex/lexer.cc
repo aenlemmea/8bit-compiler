@@ -5,14 +5,14 @@
 void etbit::lexer::lexer::read_char()
 {
     assert(!input.empty());
-    at = ((readpos >= static_cast<int32_t>(input.length())) ? '0' : input[readpos]);
+    at = ((static_cast<std::string_view::size_type>(readpos) >= input.length()) ? '0' : input[readpos]);
     pos = readpos;
     readpos += 1;
 }
 
 char etbit::lexer::impl::lexer::peek_char() const
 {
-    return (readpos >= input.length() ? '0' : input[readpos]);
+    return (static_cast<std::string_view::size_type>(readpos) >= input.length() ? '0' : input[readpos]);
 }
 
 bool etbit::lexer::impl::lexer::is_start_of_identifier() const

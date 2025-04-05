@@ -80,12 +80,12 @@ volatile std::unique_ptr<etbit::ast::stmnt> etbit::parser::impl::parser::parse_e
     //        oper is =
     // yes? -> return a assign_statement;
     // no? -> do as usual.
-    if (auto inf = dynamic_cast<ast::infix_expr*>(expr.get()); inf != nullptr) {
-            if (inf->oper == "=") {
-                if (auto left_hold = dynamic_cast<ast::identifier*>(inf->left.get()); left_hold != nullptr) {
+    if (auto inf = dynamic_cast<ast::infix_expr * >(expr.get()); inf != nullptr) {
+        if (inf->oper == "=") {
+            if (auto left_hold = dynamic_cast<ast::identifier * >(inf->left.get()); left_hold != nullptr) {
 
-                    return std::make_unique<ast::assign_stmnt>(*left_hold, std::move(inf->right));
-                }
+                return std::make_unique<ast::assign_stmnt>(*left_hold, std::move(inf->right));
+            }
         }
     } else {
         return std::make_unique<ast::expr_stmnt>(std::move(expr));

@@ -46,7 +46,6 @@ private:
                 add_error("Undeclared identifier: " + current_token.value, __PRETTY_FUNCTION__);
                 return nullptr;
             }
-            // TODO Handle redeclaration.
             [[fallthrough]];
         case NUMERAL:
             return parse_expr_stmnt();
