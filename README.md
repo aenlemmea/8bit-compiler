@@ -80,7 +80,7 @@ hlt
 
 Computer Running with correct ROM:
 
-<img src="docs/first_run.png" alt="Computer with 1 - 2 ROM" width="200"/>
+<img src="docs/first_run.png" alt="Computer with 1 - 2 ROM" width="400"/>
 
 
 Note: This matches the expected provided output in the original repos tests (see tests/alu_test.asm and the corresponding output in tests/tests.bat.
