@@ -21,6 +21,10 @@ enum class expr_kind {
     CONDN,
 };
 
+inline static std::unordered_map<std::string, int32_t> memory;
+inline static int32_t addr = 0;
+
+
 // Allow for Empty Base Optimization.
 struct node {};
 
@@ -74,7 +78,7 @@ using expr_ctl = std::unique_ptr<expr>;
 
 // Expressions
 
-struct type : public expr {
+struct type : public expr { // CodgeGen: Done
     expr_kind kind = expr_kind::TYPE;
     token::token token;
 
@@ -96,35 +100,40 @@ struct type : public expr {
     }
 };
 
-struct identifier : public expr {
+struct identifier : public expr { // CodeGen: TODO
     expr_kind kind = expr_kind::IDENTIFIER;
     token::token token;
 
     identifier(token::token&& _tok) : token(_tok) {}
     identifier() : identifier{token::token{token::tokens::ILLEGAL, "-1"}} {}
 
+    int32_t _get_mem_addr() const {
+        // Precondition: Identifier is declared.
+        return memory[token.value];
+    }
+
     void print(std::ostream& os) const override
     {
         os << stringify(expr_kind::IDENTIFIER) << " " << token;
     }
 
+
     void generate(std::ostream & os) const override {
-        // TODO
-        os << "Loading A\n";
+        os << "sta " << _get_mem_addr() << "\n";
     }
 
     void _gen_left(std::ostream& os) const override {
-        os << "lda " << token.value + "\n";
+        os << "lda " << _get_mem_addr() << "\n";
     }
 
     void _gen_right(std::ostream& os) const override {
-        os << "mov B M " << token.value + "\n";
+        os << "mov B M " << _get_mem_addr() << "\n";
     }
 };
 
-struct numeral : public expr {
+struct numeral : public expr { // CodeGen: Done
     expr_kind kind = expr_kind::NUM;
-    int8_t value;
+    int32_t value;
     token::token token;
 
     numeral(int8_t _value, token::token& _token) : value(_value), token(_token) {}
@@ -136,20 +145,19 @@ struct numeral : public expr {
     }
 
     void generate(std::ostream & os) const override {
-        // TODO
-        os << "Loading 42\n";
+        _gen_left(os);
     }
 
     void _gen_left(std::ostream& os) const override {
-        os << "ldi A " << /*TODO*/ "\n";
+        os << "ldi A " << value << "\n";
     }
 
     void _gen_right(std::ostream& os) const override {
-        os << "ldi B " << /*TODO*/ "\n";
+        os << "ldi B " << value << "\n";
     }
 };
 
-struct infix_expr : public expr {
+struct infix_expr : public expr { // CodeGen: Done
     expr_ctl left;
     std::string oper;
     expr_ctl right;
@@ -194,7 +202,7 @@ struct infix_expr : public expr {
         if (oper == "+") {
             os << "add\n";
         } else if (oper == "=") {
-            os << "sta " << dynamic_cast<identifier*>(left.get())->token.value << "\n";
+            os /* << "sta NOT ME" << dynamic_cast<identifier*>(left.get())->token.value << "\n"; */ << "hlt\n";
         } else if (oper == "-") {
             os << "sub\n";
         } else if (oper == "==") {
@@ -205,7 +213,7 @@ struct infix_expr : public expr {
     }
 };
 
-struct condition_expr : public expr {
+struct condition_expr : public expr { // CodeGen: Done
     expr_kind kind = expr_kind::CONDN;
     expr_ctl condition;
 
@@ -237,7 +245,7 @@ enum class stmnt_kind {
 };
 
 // Wrapper around expr (more generally hosts rvalues).
-struct expr_stmnt : public stmnt {
+struct expr_stmnt : public stmnt { // CodgeGen: Done
     stmnt_kind kind = stmnt_kind::EXPR_STMNT;
     expr_ctl expression;
 
@@ -261,7 +269,7 @@ struct expr_stmnt : public stmnt {
 };
 
 // For statements like int a;
-struct vardecl_stmnt : public stmnt {
+struct vardecl_stmnt : public stmnt { // CodeGen: Done
     stmnt_kind kind = stmnt_kind::VARDEC_STMNT;
     type decl_type;
     identifier ident;
@@ -279,18 +287,17 @@ struct vardecl_stmnt : public stmnt {
         os << "\n";
     }
 
-    // Meta wrapper to signal that vardecl_stmnt does not generate but reserves generation.
     void _meta() const noexcept {
-        1 == sizeof(char);
+        memory.insert({ident.token.value, ++addr});
     }
 
-    void generate(std::ostream & os) const override {
+    void generate(std::ostream&) const override {
             _meta();
-            // TODO make meta register vars, reserve idents if needed.
     }
 };
 
-struct [[deprecated("Use infix_expr combined with expr_stmnt"), maybe_unused]] assign_stmnt : public stmnt {
+// For a = 2 + b; type statements
+struct assign_stmnt : public stmnt { // CodeGen: TODO
     stmnt_kind kind = stmnt_kind::ASSIGN_STMNT;
     identifier ident;
     expr_ctl expression;
@@ -312,14 +319,13 @@ struct [[deprecated("Use infix_expr combined with expr_stmnt"), maybe_unused]] a
     }
 
     void generate(std::ostream & os) const override {
-        // BUG Fix below.
         expression->generate(os);
         ident.generate(os);
     }
 };
 
 // If conditions.
-struct if_stmnt : public stmnt {
+struct if_stmnt : public stmnt { // CodeGen: Done
     using condition = std::unique_ptr<condition_expr>;
     stmnt_kind kind = stmnt_kind::IF_STMNT;
     condition cond;
