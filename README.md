@@ -1,39 +1,52 @@
-----
-# Note
-
-**The codegen is not there yet. It requires some work. For now all the functionality is in place, just need the register allocation and scheduling in place.**
-
-The sample folder shows a sample ran with the compiler.
-
-----
-
 ## 8bit-compiler
 
 8bit-compiler for [8bit-computer](https://github.com/lightcode/8bit-computer) architecture.
 
-It does some minor semantic checking and the codegen works directly on the AST.
+It does semantic checking and the codegen works directly on the AST using a right-left deducing code generator.
 
 ```
 .
 ├── CMakeLists.txt
-├── include    // Code for all the interfaces as well as the ast implementation
-├── lib        // External Library - Used uT for testing
+├── docs     // Related documentation
+├── include  // Code for all the interfaces as well as the ast implementation
+├── lib      // External submodules and testing library
+├── out      // Directory for the ROM generated after driver.sh run
 ├── README.md
-├── sample     // Language sample
-├── src        // Implementation files for the interfaces.
-└── tests      // Unit and functionality (integration) testing.
-
+├── sample   // Sample programs 
+├── scripts  // Script (driver.sh) to automate the compiler
+├── src      // The source code 
+└── tests    // All the tests.
 ```
 
-
-
 ## Usage:
+
+
+There is a driver provided as `scripts/driver.sh`. To use it, create a simple lang (save it as `filename.simpl` program in the `sample` directory and call the script (make sure to call it from the `sample/` directory only) by giving it executable permissions.
+
+Note: The 8bit-computer project uses python2, luckily to switch to python3 is easy by replacing the call to `print` on the last line with `print(...)` (i.e add the braces).
+
+```bash
+chmod u+x driver.sh
+
+./driver.sh <filename_without_extension>
+```
+
+This would produce the `.asm` file in the same directory as well as put a `memory.list` file in the `out` directory in project root. 
+
+The script also copies the `memory.list` file to the 8bit-computer submodule and runs the VM.
+
+ 
+Alternatively,
+
 
 ```bash
 Usage: ./etbit <filename> --show-parsed
 ```
 
+filename can be anything and extension will be `.simpl`.
+
 You can then use the generated `.asm` file with the assembler provided in the original 8bit-computer project to further run it on the VM.
+ 
 
 ## Building:
 
@@ -42,71 +55,37 @@ You can then use the generated `.asm` file with the assembler provided in the or
 cmake . -Bbuild && make
 ```
 
-If you see deprecated warnings, it is for the test due to some extraneous constructs that were put in place.
-
 ## Sample outputs
 
-```cobol
-parser_test
+Program:
 
-stmnt_kind::VARDEC_STMNT 
-TYPE: 
-expr_kind::TYPE Kind: TYPE_INT_DECL Value: int
-IDENT: 
-expr_kind::IDENTIFIER Kind: IDENT Value: a
-stmnt_kind::VARDEC_STMNT 
-TYPE: 
-expr_kind::TYPE Kind: TYPE_INT_DECL Value: int
-IDENT: 
-expr_kind::IDENTIFIER Kind: IDENT Value: e
- IF COND: expr_kind::CONDN 
-expr_kind::INFIX 
-Left: expr_kind::IDENTIFIER Kind: IDENT Value: a
-Oper: ==
-Right: expr_kind::NUM Kind: NUMERAL Value: 3 BODY: 
-stmnt_kind::EXPR_STMNT 
-expr_kind::INFIX 
-Left: expr_kind::IDENTIFIER Kind: IDENT Value: e
-Oper: =
-Right: expr_kind::INFIX 
-Left: expr_kind::IDENTIFIER Kind: IDENT Value: e
-Oper: +
-Right: expr_kind::NUM Kind: NUMERAL Value: 4
+```c
+int a;
+a = 1 - 2;
 ```
 
-----
+ASM:
 
-```cobol
+```asm
+.text
 
-lexer test
+ldi A 1
+ldi B 2
+sub
+sta 1
 
-1 Kind: IDENT Value: a
-2 Kind: ASSIGNMENT Value: =
-3 Kind: NUMERAL Value: 10
-4 Kind: SEMICOLON Value: ;
-5 Kind: IDENT Value: b
-6 Kind: ASSIGNMENT Value: =
-7 Kind: NUMERAL Value: 20
-8 Kind: SEMICOLON Value: ;
-9 Kind: IDENT Value: c
-10 Kind: ASSIGNMENT Value: =
-11 Kind: IDENT Value: a
-12 Kind: PLUS Value: +
-13 Kind: IDENT Value: b
-14 Kind: SEMICOLON Value: ;
-15 Kind: TYPE_INT_DECL Value: int
-16 Kind: IDENT Value: a
-17 Kind: SEMICOLON Value: ;
-18 Kind: IF Value: if
-19 Kind: LPAREN Value: (
-20 Kind: IDENT Value: c
-21 Kind: EQUALS Value: ==
-22 Kind: NUMERAL Value: 30
-23 Kind: RPAREN Value: )
-24 Kind: LCURLY Value: {
-25 Kind: IDENT Value: c
-26 Kind: ASSIGNMENT Value: =
-27 Kind: IDENT Value: c
-28 Kind: PLUS Value: +
-29 Kind: NUMERAL Value: 1
+
+hlt
 ```
+
+Computer Running with correct ROM:
+
+<img src="docs/first_run.png" alt="Computer with 1 - 2 ROM" width="200"/>
+
+
+Note: This matches the expected provided output in the original repos tests (see tests/alu_test.asm and the corresponding output in tests/tests.bat.
+
+
+
+
+

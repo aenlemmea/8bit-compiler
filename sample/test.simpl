@@ -1,5 +1,7 @@
 int a;
+a = 3;
 int e;
+e = 2;
 if (a == 3) {
 	e = e + 4;
 }

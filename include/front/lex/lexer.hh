@@ -84,8 +84,7 @@ private:
     bool is_start_of_numeral() const;
     bool is_start_of_identifier() const;
 
-    // Single method that provides a string (we use copy ellision here, hence not using reference or a string view)
-    // given whether it is numeral or a identifer.
+    // Single method that provides a string given whether it is numeral or a identifer.
     [[nodiscard]] std::string_view read_literal(token::literal num_or_id) noexcept;
 };
 };

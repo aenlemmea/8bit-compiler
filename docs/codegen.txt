@@ -1,0 +1,96 @@
+// Assuming A, B are given registers since it(8bit-computer) does not mention the register descriptor
+
+**I** reserve A for declarations, B for computation (destructive).
+
+ enum class expr_kind {
+  TYPE,
+      <>
+  IDENTIFIER,
+
+        a = a + 5;
+        a = 5; Done
+        a = 2 + 3; Done
+
+
+        left: lda <datamem(var)>
+        right: ldb <datamem(var)> // No ldb, use mov B M <datamem(var)>
+        generate(): // Cannot mirror left or right, how do I do this?
+        // There is no guarantees that infix_expr wouldn't call generate()
+        // Or any guarantee that assign_stmnt wouldn't call left or right.
+  NUM,
+      a = 3 + 4;
+          L   R
+      a = 3;
+          L // Now this is L since we no longer use infix_expr, assign_stmnt makes this L.
+      3 == 3;
+      L    R // Still infix_expr
+      generate() -> call left();
+      In left: ldi A <val>
+      In right: ldi B <val>
+ }
+  INFIX,
+      a + 3;
+      l.expr op.str r.expr
+      technically infix is totally on right>?
+      In right:
+          generate(l.expr)
+          generate(r.expr)
+          switch(op.str) {
+               case "+":
+                  add
+               case "-":
+                  sub
+               case "==":
+                  cmp
+               default:
+                  add_error("codegen unsupported operator")
+          }
+
+
+  CONDN,
+      Delegate to infix?
+
+
+
+  enum class stmnt_kind {
+  EXPR_STMNT,
+       generate(expression)
+       sta mem_loc(identifier)
+  IF_STMNT,
+      if is not really left or right??
+      generate(CONDN.expr)
+      jne %donelabel
+      generate(body.expr)
+      jmp %donelabel
+      cout << donelabel: // Assuming empty labels are supported.
+  VARDEC_STMNT,
+      generate(identifier)
+
+
+====================================================================
+
+
+RTL:
+
+mov r M D // r <- [D]           lda  A  // A <- [D]
+mov M r D // [D] <- r           sta  A  // [D] <- A  ;; Does this not allow register naming?
+
+
+Register descriptor: https://github.com/lightcode/8bit-computer/blob/master/rtl/cpu_registers.v
+
+reg = {
+    "A": 0b000,
+    "B": 0b001,
+    "C": 0b010,
+    "D": 0b011,
+    "E": 0b100,
+    "F": 0b101,
+    "G": 0b110,
+    "M": 0b111,
+}
+
+## Trading speed with simplicity.
+
+So the key idea that I got from a friend was that since the language is really that simple I do not need register allocation to be done if I rely on memory. The thing is I can afford to trade speed in terms of not using registers and directly using memory addresses. Doing so results in easier codegen.
+
+

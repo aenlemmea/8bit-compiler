@@ -71,11 +71,27 @@ etbit::ast::context etbit::parser::parser::parse_context()
 // Parsing core methods
 
 // Redirection method to convert from expr -> expr_stmnt
-std::unique_ptr<etbit::ast::expr_stmnt> etbit::parser::impl::parser::parse_expr_stmnt()
+volatile std::unique_ptr<etbit::ast::stmnt> etbit::parser::impl::parser::parse_expr_stmnt()
 {
     auto expr = parse_expr();
-    return std::make_unique<ast::expr_stmnt>(std::move(expr));
 
+    // if it is a infix expr.
+    // yes -> left is IDENT?
+    //        oper is =
+    // yes? -> return a assign_statement;
+    // no? -> do as usual.
+    if (auto inf = dynamic_cast<ast::infix_expr * >(expr.get()); inf != nullptr) {
+        if (inf->oper == "=") {
+            if (auto left_hold = dynamic_cast<ast::identifier * >(inf->left.get()); left_hold != nullptr) {
+
+                return std::make_unique<ast::assign_stmnt>(*left_hold, std::move(inf->right));
+            }
+        }
+    } else {
+        return std::make_unique<ast::expr_stmnt>(std::move(expr));
+    }
+
+    return nullptr;
 }
 
 // Driver function to handle longest matching sequence.

@@ -81,7 +81,8 @@ struct token {
         return os;
     }
 
-    std::string to_string() const {
+    std::string to_string() const
+    {
         return "Kind: " + tokmap[kind] + " Value: " + value + "\n";
     }
 };

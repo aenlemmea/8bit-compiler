@@ -4,7 +4,8 @@
 #include "front/parse/parser.hh"
 #include <sstream>
 
-std::string trim(std::string& str) {
+std::string trim(std::string& str)
+{
     std::string spd;
     for (auto c : str) {
         if (!(c == ' ' || c == '\r' || c == '\n' || c == '\t')) {
@@ -14,24 +15,25 @@ std::string trim(std::string& str) {
     return spd;
 }
 
-int main(void) {
+int main(void)
+{
 
     using namespace boost::ut;
-    std::vector<std::tuple<std::string, std::string, int>> inputexp;
+    std::vector<std::tuple<std::string, std::string, int >> inputexp;
     inputexp.reserve(3);
 
-    inputexp.push_back({"int a;",R"(stmnt_kind::VARDEC_STMNT
+    inputexp.push_back({"int a;", R"(stmnt_kind::VARDEC_STMNT
     TYPE:
     expr_kind::TYPE Kind: TYPE_INT_DECL Value: int
     IDENT:
     expr_kind::IDENTIFIER Kind: IDENT Value: a
-    )",1});
+    )", 1});
 
     inputexp.push_back({R"(int a;
         int e;
         if (a == 3) {
             e = e + 4;
-        })",R"(
+        })", R"(
 stmnt_kind::VARDEC_STMNT
 TYPE:
 expr_kind::TYPE Kind: TYPE_INT_DECL Value: int
@@ -55,10 +57,10 @@ Right: expr_kind::INFIX
 Left: expr_kind::IDENTIFIER Kind: IDENT Value: e
 Oper: +
 Right: expr_kind::NUM Kind: NUMERAL Value: 4
-             )",3});
+             )", 3});
 
 
-    std::vector<std::pair<std::string, int>> got(3);
+    std::vector<std::pair<std::string, int >> got(3);
 
     for (size_t i = 0; i < inputexp.size(); i++) {
         std::string exp;
